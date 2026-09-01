@@ -1,4 +1,4 @@
-# Fluej
+# FluEJ
 
 O projeto nasce para solucionar uma das maiores vulnerabilidades do Movimento Empresa Júnior (MEJ): a perda contínua de conhecimento organizacional provocada pela alta rotatividade de membros e gestores. Em decorrência do ciclo universitário, a transição constante de equipes faz com que processos documentados, KPIs e históricos de projetos se percam em repasses informais. Para mitigar esse problema, a proposta consiste no desenvolvimento de uma plataforma e guia interativo de gestão inicial. A ferramenta atua na manutenção dos padrões de qualidade e organização da EJ ao longo do tempo, permitindo o acompanhamento do ciclo de produção dos membros, gestão de onboarding e offboarding, emissão de relatórios estratégicos e a consolidação de uma base de conhecimento de longo prazo.
 
