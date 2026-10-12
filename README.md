@@ -12,7 +12,7 @@ Before getting started, make sure you have the following software installed on y
 
 * **Git**
 * **JDK 25**
-* **Android SDK** (API 37 / Min SDK 24)
+* **Android SDK** (API 35 / Min SDK 24)
 * **IDE:** [Android Studio](https://developer.android.com/studio) or [VS Code](https://code.visualstudio.com/)
 
 ---
