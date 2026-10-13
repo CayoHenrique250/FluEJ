@@ -8,13 +8,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fluej.navigation.Screen
 import com.example.fluej.ui.components.BottomNavBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToRegister: () -> Unit,
+    onNavigateBottomBar: (String) -> Unit,
     onNavigateToMembers: () -> Unit
+    
 ) {
     Scaffold(
         topBar = {
@@ -29,11 +32,8 @@ fun HomeScreen(
         },
         bottomBar = {
             BottomNavBar(
-                selectedTab = "Início",
-                onHomeClick = {},
-                onMembersClick = onNavigateToMembers,
-                onPointsClick = {},
-                onReportsClick = {}
+                selectedTab = Screen.Home.route, 
+                onNavigate = onNavigateBottomBar
             )
         }
     ) { paddingValues ->

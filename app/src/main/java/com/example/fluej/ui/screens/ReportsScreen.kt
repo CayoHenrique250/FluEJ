@@ -22,10 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fluej.ui.components.BottomNavBar
 import com.example.fluej.ui.theme.*
+import com.example.fluej.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReportsScreen(onGenerateReport: () -> Unit) {
+fun ReportsScreen(
+    onNavigateBottomBar: (String) -> Unit,
+    onGenerateReport: () -> Unit) {
     var selectedPeriod by remember { mutableStateOf("Semanal") }
 
     Scaffold(
@@ -42,7 +45,11 @@ fun ReportsScreen(onGenerateReport: () -> Unit) {
                 }
             )
         },
-        bottomBar = { BottomNavBar(selectedTab = "Relatórios") }
+        bottomBar = { 
+            BottomNavBar(
+                selectedTab = Screen.Reports.route,
+                onNavigate = onNavigateBottomBar
+            )  }
     ) { paddingValues ->
         Column(
             modifier = Modifier

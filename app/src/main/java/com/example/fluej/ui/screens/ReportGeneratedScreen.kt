@@ -23,10 +23,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fluej.ui.components.BottomNavBar
 import com.example.fluej.ui.theme.*
+import com.example.fluej.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReportGeneratedScreen(onBack: () -> Unit) {
+fun ReportGeneratedScreen(
+    onNavigateBottomBar: (String) -> Unit,
+    onBack: () -> Unit
+    ) {
     Scaffold(
         containerColor = SurfaceLight,
         topBar = {
@@ -41,7 +45,12 @@ fun ReportGeneratedScreen(onBack: () -> Unit) {
                 }
             )
         },
-        bottomBar = { BottomNavBar(selectedTab = "Relatórios") }
+        bottomBar = { 
+            BottomNavBar(
+                selectedTab = Screen.ReportGenerated.route,
+                onNavigate = onNavigateBottomBar
+            )  }
+            
     ) { paddingValues ->
         Column(
             modifier = Modifier

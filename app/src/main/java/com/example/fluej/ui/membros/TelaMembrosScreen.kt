@@ -5,16 +5,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.fluej.ui.components.BottomNavBar
+import com.example.fluej.navigation.Screen
 
 @Composable
 fun TelaMembrosScreen(
-    onMembroClick: (Membro) -> Unit = {}
+    onMembroClick: (Membro) -> Unit = {},
+    onNavigateBottomBar: (String) -> Unit
 ) {
     var busca by remember { mutableStateOf("") }
     var filtro by remember { mutableStateOf("Todos") }
@@ -50,7 +54,7 @@ fun TelaMembrosScreen(
     val membrosFiltrados = membros.filter { membro ->
         val correspondeBusca =
             membro.nome.contains(busca, ignoreCase = true) ||
-            membro.cargo.contains(busca, ignoreCase = true)
+                    membro.cargo.contains(busca, ignoreCase = true)
 
         val setor = obterSetor(membro.cargo)
 
@@ -59,81 +63,91 @@ fun TelaMembrosScreen(
             "Inativos" -> !membro.ativo
             "Marketing", "Projetos", "RH", "Vendas" ->
                 setor == filtro
+
             else -> true
         }
 
         correspondeBusca && correspondeFiltro
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF0F0F0))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = "FluEJ",
-                fontWeight = FontWeight.Bold
+    Scaffold(
+        bottomBar = {
+            BottomNavBar(
+                selectedTab = Screen.Members.route,
+                onNavigate = onNavigateBottomBar
             )
-
-            Text("Gestão de membros")
         }
-
-        BarraBusca(
-            texto = busca,
-            onTextoChange = { busca = it },
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp)
-        )
-
-        FiltrosMembros(
-            filtroSelecionado = filtro,
-            onFiltroChange = { filtro = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp)
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentPadding = PaddingValues(
-                horizontal = 12.dp,
-                vertical = 4.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+                .fillMaxSize()
+                .background(Color(0xFFF0F0F0))
+                .padding(paddingValues)
         ) {
-            items(
-                items = membrosFiltrados,
-                key = { it.nome }
-            ) { membro ->
-                CardMembro(
-                    membro = membro,
-                    onClick = { onMembroClick(membro) }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "FluEJ",
+                    fontWeight = FontWeight.Bold
                 )
+
+                Text("Gestão de membros")
             }
 
-            if (membrosFiltrados.isEmpty()) {
-                item {
-                    Text(
-                        text = "Nenhum membro encontrado.",
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onSurface
+            BarraBusca(
+                texto = busca,
+                onTextoChange = { busca = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+            )
+
+            FiltrosMembros(
+                filtroSelecionado = filtro,
+                onFiltroChange = { filtro = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(
+                    horizontal = 12.dp,
+                    vertical = 4.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                items(
+                    items = membrosFiltrados,
+                    key = { it.nome }
+                ) { membro ->
+                    CardMembro(
+                        membro = membro,
+                        onClick = { onMembroClick(membro) }
                     )
+                }
+
+                if (membrosFiltrados.isEmpty()) {
+                    item {
+                        Text(
+                            text = "Nenhum membro encontrado.",
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
         }
 
-        BarraInferiorMembros()
     }
 }

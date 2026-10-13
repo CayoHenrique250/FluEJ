@@ -1,28 +1,24 @@
 package com.example.fluej.ui.components
 
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.example.fluej.navigation.Screen
 
 @Composable
 fun BottomNavBar(
-    selectedTab: String = "Início",
-    onHomeClick: () -> Unit = {},
-    onMembersClick: () -> Unit = {},
-    onPointsClick: () -> Unit = {},
-    onReportsClick: () -> Unit = {}
+    selectedTab: String?,
+    onNavigate: (String) -> Unit
 ) {
-    NavigationBar {
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+
         NavigationBarItem(
-            selected = selectedTab == "Início",
-            onClick = onHomeClick,
+            selected = selectedTab == Screen.Home.route,
+            onClick = { onNavigate(Screen.Home.route) },
             icon = {
                 Icon(
                     Icons.Default.Home,
@@ -33,8 +29,8 @@ fun BottomNavBar(
         )
 
         NavigationBarItem(
-            selected = selectedTab == "Membros",
-            onClick = onMembersClick,
+            selected = selectedTab == Screen.Members.route,
+            onClick = { onNavigate(Screen.Members.route) },
             icon = {
                 Icon(
                     Icons.Default.Person,
@@ -45,8 +41,8 @@ fun BottomNavBar(
         )
 
         NavigationBarItem(
-            selected = selectedTab == "Pontos",
-            onClick = onPointsClick,
+            selected = selectedTab == "pontos_route", 
+            onClick = { /* onNavigate(Screen.Pontos.route)*/ },
             icon = {
                 Icon(
                     Icons.Default.Star,
@@ -57,8 +53,8 @@ fun BottomNavBar(
         )
 
         NavigationBarItem(
-            selected = selectedTab == "Relatórios",
-            onClick = onReportsClick,
+            selected = selectedTab == Screen.Reports.route,
+            onClick = { onNavigate(Screen.Reports.route) },
             icon = {
                 Icon(
                     Icons.Default.DateRange,

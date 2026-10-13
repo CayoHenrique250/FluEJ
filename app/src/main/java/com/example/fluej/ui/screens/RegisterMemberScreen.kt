@@ -32,11 +32,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import com.example.fluej.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterMemberScreen(
     onBack: () -> Unit,
+    onNavigateBottomBar: (String) -> Unit,
     viewModel: RegisterMemberViewModel = viewModel()
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -58,7 +60,12 @@ fun RegisterMemberScreen(
                 }
             )
         },
-        bottomBar = { BottomNavBar(selectedTab = "Membros") }
+        bottomBar = { 
+            BottomNavBar(
+                selectedTab = Screen.RegisterMember.route,
+                onNavigate = onNavigateBottomBar
+            ) }
+            
     ) { paddingValues ->
         Column(
             modifier = Modifier
