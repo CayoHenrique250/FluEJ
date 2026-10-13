@@ -39,7 +39,7 @@ import androidx.compose.ui.res.painterResource
 import com.example.fluej.R
 import androidx.compose.ui.layout.ContentScale
 @Composable
-fun LoginScreen() {
+fun LoginScreen(onLoginSuccess: () -> Unit) {
 
     var email by remember { mutableStateOf(value = "") }
     var password by remember { mutableStateOf(value = "") }
@@ -140,6 +140,7 @@ fun LoginScreen() {
                     isEmailError = true
                 } else {
                     Toast.makeText(context, "Login realizado com sucesso", Toast.LENGTH_LONG).show()
+                    onLoginSuccess()
                 }
             },
             modifier = Modifier.fillMaxWidth(0.75f),
@@ -158,6 +159,6 @@ fun LoginScreen() {
 @Composable
 private fun LoginScreenPreview() {
     FluEJTheme {
-        LoginScreen()
+        LoginScreen(onLoginSuccess = {})
     }
 }
