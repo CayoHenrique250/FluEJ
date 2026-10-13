@@ -9,8 +9,10 @@ import com.example.fluej.ui.screens.RegisterMemberScreen
 import com.example.fluej.ui.screens.ReportGeneratedScreen
 import com.example.fluej.ui.screens.ReportsScreen
 import com.example.fluej.ui.membros.TelaMembrosScreen
+import com.example.fluej.ui.screens.LoginScreen
 
 sealed class Screen(val route: String) {
+    object Login : Screen("login")
     object Home : Screen("home")
     object RegisterMember : Screen("register_member")
     object Reports : Screen("reports")
@@ -33,8 +35,19 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Login.route
     ) {
+        composable(Screen.Login.route) {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
         composable(Screen.Home.route) {
             HomeScreen(
                 onNavigateToRegister = { navController.navigate(Screen.RegisterMember.route) },
