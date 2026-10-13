@@ -29,14 +29,36 @@ fun TelaMembrosScreen(
         )
     }
 
+    fun obterSetor(cargo: String): String {
+        return when {
+            cargo.contains("marketing", ignoreCase = true) ->
+                "Marketing"
+
+            cargo.contains("projetos", ignoreCase = true) ->
+                "Projetos"
+
+            cargo.contains("rh", ignoreCase = true) ->
+                "RH"
+
+            cargo.contains("vendas", ignoreCase = true) ->
+                "Vendas"
+
+            else -> ""
+        }
+    }
+
     val membrosFiltrados = membros.filter { membro ->
         val correspondeBusca =
             membro.nome.contains(busca, ignoreCase = true) ||
             membro.cargo.contains(busca, ignoreCase = true)
 
+        val setor = obterSetor(membro.cargo)
+
         val correspondeFiltro = when (filtro) {
             "Ativos" -> membro.ativo
             "Inativos" -> !membro.ativo
+            "Marketing", "Projetos", "RH", "Vendas" ->
+                setor == filtro
             else -> true
         }
 
@@ -74,7 +96,9 @@ fun TelaMembrosScreen(
         FiltrosMembros(
             filtroSelecionado = filtro,
             onFiltroChange = { filtro = it },
-            modifier = Modifier.padding(horizontal = 12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
         )
 
         Spacer(Modifier.height(8.dp))
@@ -103,7 +127,8 @@ fun TelaMembrosScreen(
                 item {
                     Text(
                         text = "Nenhum membro encontrado.",
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

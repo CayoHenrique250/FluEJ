@@ -1,7 +1,9 @@
 package com.example.fluej.ui.membros
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,11 +16,21 @@ fun FiltrosMembros(
     onFiltroChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val filtros = listOf(
+        "Todos",
+        "Ativos",
+        "Inativos",
+        "Marketing",
+        "Projetos",
+        "RH",
+        "Vendas"
+    )
+
     Row(
-        modifier = modifier,
+        modifier = modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        listOf("Todos", "Ativos", "Inativos").forEach { filtro ->
+        filtros.forEach { filtro ->
             FilterChip(
                 selected = filtroSelecionado == filtro,
                 onClick = { onFiltroChange(filtro) },
