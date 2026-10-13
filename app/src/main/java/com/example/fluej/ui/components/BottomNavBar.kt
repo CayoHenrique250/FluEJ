@@ -12,30 +12,59 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
 @Composable
-fun BottomNavBar(selectedTab: String = "Relatórios") {
+fun BottomNavBar(
+    selectedTab: String = "Início",
+    onHomeClick: () -> Unit = {},
+    onMembersClick: () -> Unit = {},
+    onPointsClick: () -> Unit = {},
+    onReportsClick: () -> Unit = {}
+) {
     NavigationBar {
         NavigationBarItem(
             selected = selectedTab == "Início",
-            onClick = { },
-            icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
+            onClick = onHomeClick,
+            icon = {
+                Icon(
+                    Icons.Default.Home,
+                    contentDescription = "Início"
+                )
+            },
             label = { Text("Início") }
         )
+
         NavigationBarItem(
             selected = selectedTab == "Membros",
-            onClick = { },
-            icon = { Icon(Icons.Default.Person, contentDescription = "Membros") },
+            onClick = onMembersClick,
+            icon = {
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = "Membros"
+                )
+            },
             label = { Text("Membros") }
         )
+
         NavigationBarItem(
             selected = selectedTab == "Pontos",
-            onClick = { },
-            icon = { Icon(Icons.Default.Star, contentDescription = "Pontos") },
+            onClick = onPointsClick,
+            icon = {
+                Icon(
+                    Icons.Default.Star,
+                    contentDescription = "Pontos"
+                )
+            },
             label = { Text("Pontos") }
         )
+
         NavigationBarItem(
             selected = selectedTab == "Relatórios",
-            onClick = { },
-            icon = { Icon(Icons.Default.DateRange, contentDescription = "Relatórios") },
+            onClick = onReportsClick,
+            icon = {
+                Icon(
+                    Icons.Default.DateRange,
+                    contentDescription = "Relatórios"
+                )
+            },
             label = { Text("Relatórios") }
         )
     }

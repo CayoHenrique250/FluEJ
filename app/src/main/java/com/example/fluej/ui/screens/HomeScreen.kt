@@ -12,12 +12,30 @@ import com.example.fluej.ui.components.BottomNavBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onNavigateToRegister: () -> Unit) {
+fun HomeScreen(
+    onNavigateToRegister: () -> Unit,
+    onNavigateToMembers: () -> Unit
+) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("FluEJ Gestão de membros", fontWeight = FontWeight.Bold) })
+            TopAppBar(
+                title = {
+                    Text(
+                        "FluEJ Gestão de membros",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            )
         },
-        bottomBar = { BottomNavBar(selectedTab = "Início") }
+        bottomBar = {
+            BottomNavBar(
+                selectedTab = "Início",
+                onHomeClick = {},
+                onMembersClick = onNavigateToMembers,
+                onPointsClick = {},
+                onReportsClick = {}
+            )
+        }
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -27,7 +45,9 @@ fun HomeScreen(onNavigateToRegister: () -> Unit) {
         ) {
             Button(
                 onClick = onNavigateToRegister,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             ) {
                 Text("Cadastrar membro", fontSize = 16.sp)
             }
