@@ -8,10 +8,15 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fluej.data.AppDatabase
 import com.example.fluej.data.Member
+import com.example.fluej.data.MemberRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class RegisterMemberViewModel(application: Application) : AndroidViewModel(application) {
+
     private val dao = AppDatabase.getDatabase(application).memberDao()
+    private val repository = MemberRepository(dao)
 
     var nome by mutableStateOf("")
     var cpf by mutableStateOf("")
@@ -21,8 +26,14 @@ class RegisterMemberViewModel(application: Application) : AndroidViewModel(appli
     var cargo by mutableStateOf("")
     var setor by mutableStateOf("")
 
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.sincronizarPendentes()
+        }
+    }
+
     fun saveMember(onSuccess: () -> Unit) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val novoMembro = Member(
                 nome = nome,
                 cpf = cpf,
@@ -32,8 +43,12 @@ class RegisterMemberViewModel(application: Application) : AndroidViewModel(appli
                 cargo = cargo,
                 setor = setor
             )
-            dao.insertMember(novoMembro)
-            onSuccess()
+
+            repository.adicionarMembro(novoMembro)
+
+            withContext(Dispatchers.Main) {
+                onSuccess()
+            }
         }
     }
 }
