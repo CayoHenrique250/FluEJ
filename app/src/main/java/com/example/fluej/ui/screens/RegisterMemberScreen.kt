@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fluej.data.Options
 import com.example.fluej.ui.components.BottomNavBar
 import com.example.fluej.ui.theme.*
 import com.example.fluej.ui.viewmodels.RegisterMemberViewModel
@@ -43,8 +44,8 @@ fun RegisterMemberScreen(
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
 
-    val cargoOptions = listOf("Assessor", "Diretor", "Gerente", "Trainee")
-    val setorOptions = listOf("Marketing", "Vendas", "Projetos", "RH")
+    val cargoOptions = Options.cargos
+    val setorOptions = Options.setores
 
     Scaffold(
         containerColor = SurfaceLight,
@@ -60,12 +61,13 @@ fun RegisterMemberScreen(
                 }
             )
         },
-        bottomBar = { 
+        bottomBar = {
             BottomNavBar(
                 selectedTab = Screen.RegisterMember.route,
                 onNavigate = onNavigateBottomBar
-            ) }
-            
+            )
+        }
+
     ) { paddingValues ->
         Column(
             modifier = Modifier

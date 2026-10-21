@@ -1,5 +1,8 @@
 package com.example.fluej.ui.screens
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -10,27 +13,51 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fluej.data.ReportDates
+import com.example.fluej.data.XlsxWriter
+import com.example.fluej.navigation.Screen
 import com.example.fluej.ui.components.BottomNavBar
 import com.example.fluej.ui.theme.*
-import com.example.fluej.navigation.Screen
+import com.example.fluej.ui.viewmodels.ReportsViewModel
+import com.example.fluej.ui.viewmodels.activityReportsViewModel
+
+private fun larguraColuna(indice: Int): Dp = if (indice == 0) 150.dp else 110.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportGeneratedScreen(
     onNavigateBottomBar: (String) -> Unit,
-    onBack: () -> Unit
-    ) {
+    onBack: () -> Unit,
+    viewModel: ReportsViewModel = activityReportsViewModel()
+) {
+    val context = LocalContext.current
+    val relatorio = viewModel.relatorio
+
+    LaunchedEffect(viewModel.mensagem) {
+        viewModel.mensagem?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            viewModel.limparMensagem()
+        }
+    }
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument(XlsxWriter.MIME)
+    ) { uri -> if (uri != null) viewModel.exportar(uri) }
+
     Scaffold(
         containerColor = SurfaceLight,
         topBar = {
@@ -45,12 +72,12 @@ fun ReportGeneratedScreen(
                 }
             )
         },
-        bottomBar = { 
+        bottomBar = {
             BottomNavBar(
                 selectedTab = Screen.ReportGenerated.route,
                 onNavigate = onNavigateBottomBar
-            )  }
-            
+            )
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -85,53 +112,87 @@ fun ReportGeneratedScreen(
                 color = TextPrimary
             )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, GrayBorder, RoundedCornerShape(8.dp))
-                    .background(CardBackground)
-                    .horizontalScroll(rememberScrollState())
-            ) {
-                Column {
-                
-                    Row(
-                        modifier = Modifier
-                            .background(GrayHeaderTable)
-                            .padding(vertical = 10.dp)
-                    ) {
-                        listOf("Nome", "Cargo", "Pontos Jan/2026", "Pontos Fev/2026", "Total de pontos", "Total de horas").forEach { header ->
-                            Text(
-                                text = header,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(110.dp),
-                                fontSize = 11.sp,
-                                textAlign = TextAlign.Center,
-                                color = TextPrimary
-                            )
-                        }
-                    }
+            if (relatorio == null) {
+                Text("Nenhum relatório disponível. Volte e gere novamente.", color = TextSecondary)
+            } else {
+                Text(
+                    text = "Período: ${ReportDates.br(relatorio.inicio)} a ${ReportDates.br(relatorio.fim)}",
+                    fontSize = 13.sp,
+                    color = TextSecondary
+                )
+                Text(
+                    text = "Cargo: ${viewModel.cargo ?: "Todos"}  •  Membro: " +
+                            (viewModel.todosMembros.firstOrNull { it.id == viewModel.membroId }?.nome ?: "Todos"),
+                    fontSize = 13.sp,
+                    color = TextSecondary
+                )
 
-                    HorizontalDivider(color = GrayBorder)
-
-                    val sampleData = listOf(
-                        listOf("Aninha Clarinha", "Gestor(a) de RH", "10", "10", "10", "3h"),
-                        listOf("Duda Vlogs", "Gestor(a) Marketing", "50", "50", "50", "15h"),
-                        listOf("Marciano", "Membro de projetos", "20", "20", "20", "6h")
+                if (relatorio.totalPontos == 0 && relatorio.totalHoras == 0.0) {
+                    Text(
+                        "Não há pontos ou horas lançados neste período.",
+                        fontSize = 12.sp,
+                        color = TextSecondary
                     )
+                }
 
-                    sampleData.forEach { row ->
-                        Row(modifier = Modifier.padding(vertical = 12.dp)) {
-                            row.forEach { cell ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, GrayBorder, RoundedCornerShape(8.dp))
+                        .background(CardBackground)
+                        .horizontalScroll(rememberScrollState())
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier
+                                .background(GrayHeaderTable)
+                                .padding(vertical = 10.dp)
+                        ) {
+                            relatorio.cabecalho.forEachIndexed { i, header ->
                                 Text(
-                                    text = cell,
-                                    modifier = Modifier.width(110.dp),
+                                    text = header,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(larguraColuna(i)),
                                     fontSize = 11.sp,
                                     textAlign = TextAlign.Center,
                                     color = TextPrimary
                                 )
                             }
                         }
+
                         HorizontalDivider(color = GrayBorder)
+
+                        relatorio.linhasTexto().forEach { row ->
+                            Row(modifier = Modifier.padding(vertical = 12.dp)) {
+                                row.forEachIndexed { i, cell ->
+                                    Text(
+                                        text = cell,
+                                        modifier = Modifier.width(larguraColuna(i)),
+                                        fontSize = 11.sp,
+                                        textAlign = TextAlign.Center,
+                                        color = TextPrimary
+                                    )
+                                }
+                            }
+                            HorizontalDivider(color = GrayBorder)
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .background(GrayHeaderTable)
+                                .padding(vertical = 12.dp)
+                        ) {
+                            relatorio.totalTexto().forEachIndexed { i, cell ->
+                                Text(
+                                    text = cell,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(larguraColuna(i)),
+                                    fontSize = 11.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = TextPrimary
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -139,7 +200,8 @@ fun ReportGeneratedScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             Button(
-                onClick = { },
+                onClick = { exportLauncher.launch(viewModel.nomeArquivo()) },
+                enabled = relatorio != null && relatorio.linhas.isNotEmpty(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -147,7 +209,7 @@ fun ReportGeneratedScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryDark)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Share,
+                    imageVector = Icons.Default.Download,
                     contentDescription = "Baixar",
                     tint = Color.White,
                     modifier = Modifier.size(18.dp)

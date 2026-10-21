@@ -17,6 +17,20 @@ class MemberRepository(private val memberDao: MemberDao) {
         memberDao.getMembrosNaoSincronizados().forEach { enviarParaSupabase(it) }
     }
 
+    suspend fun baixarDoSupabase() {
+        try {
+            val remotos = supabase.postgrest["members"].select().decodeList<Member>()
+            val pendentes = memberDao.getMembrosNaoSincronizados().map { it.id }.toSet()
+            memberDao.insertAll(
+                remotos.filter { it.id !in pendentes }.map { it.copy(isSynced = true) }
+            )
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("SupabaseErro", "Falha ao baixar membros: ${e.message}", e)
+        }
+    }
+
     private suspend fun enviarParaSupabase(member: Member) {
         try {
             supabase.postgrest["members"].upsert(member)
