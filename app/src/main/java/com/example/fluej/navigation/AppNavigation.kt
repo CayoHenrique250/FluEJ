@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.fluej.ui.screens.HomeScreen
 import com.example.fluej.ui.screens.RegisterMemberScreen
+import com.example.fluej.ui.screens.RegisterProjectScreen
 import com.example.fluej.ui.screens.ReportGeneratedScreen
 import com.example.fluej.ui.screens.ReportsScreen
 import com.example.fluej.ui.membros.TelaMembrosScreen
@@ -15,6 +16,7 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Home : Screen("home")
     object RegisterMember : Screen("register_member")
+    object RegisterProject : Screen("register_project")
     object Reports : Screen("reports")
     object ReportGenerated : Screen("report_generated")
     object Members : Screen("members")
@@ -51,6 +53,7 @@ fun AppNavigation() {
         composable(Screen.Home.route) {
             HomeScreen(
                 onNavigateToRegister = { navController.navigate(Screen.RegisterMember.route) },
+                onNavigateToRegisterProject = { navController.navigate(Screen.RegisterProject.route) },
                 onNavigateBottomBar = navigateBottomBar,
                 onNavigateToMembers = { navController.navigate(Screen.Members.route) }
             )
@@ -62,6 +65,12 @@ fun AppNavigation() {
         }
         composable(Screen.RegisterMember.route) {
             RegisterMemberScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateBottomBar = navigateBottomBar
+            )
+        }
+        composable(Screen.RegisterProject.route) {
+            RegisterProjectScreen(
                 onBack = { navController.popBackStack() },
                 onNavigateBottomBar = navigateBottomBar
             )

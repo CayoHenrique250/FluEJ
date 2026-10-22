@@ -44,6 +44,7 @@ private const val RANKING_RESUMIDO = 3
 @Composable
 fun HomeScreen(
     onNavigateToRegister: () -> Unit,
+    onNavigateToRegisterProject: () -> Unit,
     onNavigateBottomBar: (String) -> Unit,
     onNavigateToMembers: () -> Unit,
     viewModel: DashboardViewModel = viewModel()
@@ -114,7 +115,7 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
-                    valor = "3",
+                    valor = viewModel.totalProjetos.toString(),
                     rotulo = "Projetos ativos",
                     modifier = Modifier.weight(1f)
                 )
@@ -188,7 +189,7 @@ fun HomeScreen(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Ações rápidas", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextPrimary)
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    AcaoRapida("Registrar projeto", Icons.Default.Folder, Modifier.weight(1f), emBreve)
+                    AcaoRapida("Registrar projeto", Icons.Default.Folder, Modifier.weight(1f), onNavigateToRegisterProject)
                     AcaoRapida("Registrar pontos", Icons.Default.Star, Modifier.weight(1f), emBreve)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
