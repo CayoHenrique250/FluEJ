@@ -11,6 +11,7 @@ import com.example.fluej.ui.screens.ReportGeneratedScreen
 import com.example.fluej.ui.screens.ReportsScreen
 import com.example.fluej.ui.membros.TelaMembrosScreen
 import com.example.fluej.ui.screens.LoginScreen
+import com.example.fluej.ui.pontos.TelaPontosScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -20,6 +21,8 @@ sealed class Screen(val route: String) {
     object Reports : Screen("reports")
     object ReportGenerated : Screen("report_generated")
     object Members : Screen("members")
+    object Pontos : Screen("pontos")  
+    
 }
 
 @Composable
@@ -63,6 +66,20 @@ fun AppNavigation() {
                 onNavigateBottomBar = navigateBottomBar
             )
         }
+
+        composable(Screen.Pontos.route) {
+            TelaPontosScreen(
+               onNavigate = { destino ->
+                  when (destino) {
+                   "Início" -> navigateBottomBar(Screen.Home.route)
+                   "Membros" -> navigateBottomBar(Screen.Members.route)
+                   "Pontos" -> navigateBottomBar(Screen.Pontos.route)
+                   "Relatórios" -> navigateBottomBar(Screen.Reports.route)
+            }
+        }
+    )
+}
+
         composable(Screen.RegisterMember.route) {
             RegisterMemberScreen(
                 onBack = { navController.popBackStack() },
