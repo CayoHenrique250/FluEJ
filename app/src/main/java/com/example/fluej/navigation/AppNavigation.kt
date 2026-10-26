@@ -21,8 +21,8 @@ sealed class Screen(val route: String) {
     object Reports : Screen("reports")
     object ReportGenerated : Screen("report_generated")
     object Members : Screen("members")
-    object Pontos : Screen("pontos")  
-    
+    object Pontos : Screen("pontos")
+
 }
 
 @Composable
@@ -66,19 +66,11 @@ fun AppNavigation() {
                 onNavigateBottomBar = navigateBottomBar
             )
         }
-
         composable(Screen.Pontos.route) {
             TelaPontosScreen(
-               onNavigate = { destino ->
-                  when (destino) {
-                   "Início" -> navigateBottomBar(Screen.Home.route)
-                   "Membros" -> navigateBottomBar(Screen.Members.route)
-                   "Pontos" -> navigateBottomBar(Screen.Pontos.route)
-                   "Relatórios" -> navigateBottomBar(Screen.Reports.route)
-            }
+                onNavigateBottomBar = navigateBottomBar
+            )
         }
-    )
-}
 
         composable(Screen.RegisterMember.route) {
             RegisterMemberScreen(

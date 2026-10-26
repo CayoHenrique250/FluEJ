@@ -41,8 +41,8 @@ fun BottomNavBar(
         )
 
         NavigationBarItem(
-            selected = selectedTab == "pontos_route", 
-            onClick = { /* onNavigate(Screen.Pontos.route)*/ },
+            selected = selectedTab == Screen.Pontos.route,
+            onClick = { onNavigate(Screen.Pontos.route) },
             icon = {
                 Icon(
                     Icons.Default.Star,
