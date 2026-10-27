@@ -47,6 +47,7 @@ fun DashboardRHScreen(
     onNavigateToRegisterProject: () -> Unit,
     onNavigateBottomBar: (String) -> Unit,
     onNavigateToMembers: () -> Unit,
+    onNavigateToDeactivateMember: () -> Unit,
     onLogout: () -> Unit,
     viewModel: DashboardViewModel = viewModel()
 ) {
@@ -203,7 +204,7 @@ fun DashboardRHScreen(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     AcaoRapida("Cadastrar membro", Icons.Default.PersonAdd, Modifier.weight(1f), onNavigateToRegister)
-                    AcaoRapida("Inativar membro", Icons.Default.Block, Modifier.weight(1f), emBreve)
+                    AcaoRapida( texto = "Inativar membro", icone = Icons.Default.Block, modifier = Modifier.weight(1f), onClick = onNavigateToDeactivateMember)
                 }
             }
 
@@ -313,13 +314,13 @@ private fun DocumentoPendenteRow(titulo: String, quantidade: Int) {
     }
 }
 
-@Composable
-private fun AcaoRapida(
-    texto: String,
-    icone: ImageVector,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
+@Composable 
+private fun AcaoRapida( 
+    texto: String, 
+    icone: ImageVector, 
+    modifier: Modifier = Modifier, 
+    onClick: () -> Unit 
+)  {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.height(52.dp),

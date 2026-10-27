@@ -20,16 +20,18 @@ import com.example.fluej.ui.membros.TelaMembrosScreen
 import com.example.fluej.ui.screens.LoginScreen
 import kotlinx.coroutines.launch
 import com.example.fluej.ui.pontos.TelaPontosScreen
+import com.example.fluej.ui.membros.TelaInativarMembroScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Pontos : Screen("pontos")
-    object Home : Screen("home")   // "Início": escolhe o dashboard conforme o perfil
+    object Home : Screen("home") 
     object RegisterMember : Screen("register_member")
     object RegisterProject : Screen("register_project")
     object Reports : Screen("reports")
     object ReportGenerated : Screen("report_generated")
     object Members : Screen("members")
+    object InativarMembro : Screen("inativar_membro")
 }
 
 private object Acesso {
@@ -78,6 +80,17 @@ fun AppNavigation() {
             )
         }
 
+        composable(Screen.InativarMembro.route) {
+            Protegida(navController, Acesso.cadastroMembro) {
+              TelaInativarMembroScreen(
+               onNavigateBottomBar = navigateBottomBar,
+                 onBack = {
+                  navController.popBackStack()
+            }
+        )
+    }
+}
+
         composable(Screen.Home.route) {
             Protegida(navController, Acesso.todos) {
                 when (Session.perfil) {
@@ -85,6 +98,7 @@ fun AppNavigation() {
                         onNavigateToRegister = { navController.navigate(Screen.RegisterMember.route) },
                         onNavigateToRegisterProject = { navController.navigate(Screen.RegisterProject.route) },
                         onNavigateBottomBar = navigateBottomBar,
+                        onNavigateToDeactivateMember = {navController.navigate(Screen.InativarMembro.route)},
                         onNavigateToMembers = { navController.navigate(Screen.Members.route) },
                         onLogout = sair
                     )
