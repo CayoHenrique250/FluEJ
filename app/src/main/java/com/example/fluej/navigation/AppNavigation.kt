@@ -1,33 +1,48 @@
 package com.example.fluej.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.fluej.ui.screens.HomeScreen
+import com.example.fluej.data.AuthRepository
+import com.example.fluej.data.Perfil
+import com.example.fluej.data.Session
+import com.example.fluej.ui.screens.DashboardEmBreveScreen
+import com.example.fluej.ui.screens.DashboardRHScreen
 import com.example.fluej.ui.screens.RegisterMemberScreen
 import com.example.fluej.ui.screens.RegisterProjectScreen
 import com.example.fluej.ui.screens.ReportGeneratedScreen
 import com.example.fluej.ui.screens.ReportsScreen
 import com.example.fluej.ui.membros.TelaMembrosScreen
 import com.example.fluej.ui.screens.LoginScreen
+import kotlinx.coroutines.launch
 import com.example.fluej.ui.pontos.TelaPontosScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
-    object Home : Screen("home")
+    object Pontos : Screen("pontos")
+    object Home : Screen("home")   // "Início": escolhe o dashboard conforme o perfil
     object RegisterMember : Screen("register_member")
     object RegisterProject : Screen("register_project")
     object Reports : Screen("reports")
     object ReportGenerated : Screen("report_generated")
     object Members : Screen("members")
-    object Pontos : Screen("pontos")
+}
 
+private object Acesso {
+    val todos = Perfil.values().toSet()
+    val cadastroMembro = setOf(Perfil.RH, Perfil.PRESIDENTE)
+    val registroProjeto = todos - Perfil.ORIENTADOR
 }
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val scope = rememberCoroutineScope()
+
     val navigateBottomBar: (String) -> Unit = { route ->
         navController.navigate(route) {
             popUpTo(Screen.Home.route) {
@@ -35,6 +50,15 @@ fun AppNavigation() {
             }
             launchSingleTop = true
             restoreState = true
+        }
+    }
+
+    val sair: () -> Unit = {
+        scope.launch {
+            AuthRepository.sair()
+            navController.navigate(Screen.Login.route) {
+                popUpTo(navController.graph.id) { inclusive = true }
+            }
         }
     }
 
@@ -53,48 +77,94 @@ fun AppNavigation() {
                 }
             )
         }
+
         composable(Screen.Home.route) {
-            HomeScreen(
-                onNavigateToRegister = { navController.navigate(Screen.RegisterMember.route) },
-                onNavigateToRegisterProject = { navController.navigate(Screen.RegisterProject.route) },
-                onNavigateBottomBar = navigateBottomBar,
-                onNavigateToMembers = { navController.navigate(Screen.Members.route) }
-            )
-        }
-        composable(Screen.Members.route) {
-            TelaMembrosScreen(
-                onNavigateBottomBar = navigateBottomBar
-            )
-        }
-        composable(Screen.Pontos.route) {
-            TelaPontosScreen(
-                onNavigateBottomBar = navigateBottomBar
-            )
+            Protegida(navController, Acesso.todos) {
+                when (Session.perfil) {
+                    Perfil.RH -> DashboardRHScreen(
+                        onNavigateToRegister = { navController.navigate(Screen.RegisterMember.route) },
+                        onNavigateToRegisterProject = { navController.navigate(Screen.RegisterProject.route) },
+                        onNavigateBottomBar = navigateBottomBar,
+                        onNavigateToMembers = { navController.navigate(Screen.Members.route) },
+                        onLogout = sair
+                    )
+
+                    Perfil.PRESIDENTE -> DashboardEmBreveScreen("Presidente", sair)
+                    Perfil.PROJETOS, Perfil.COMERCIAL, Perfil.FINANCEIRO -> DashboardEmBreveScreen(
+                        titulo = "Gestor de ${Session.departmentOfManager}",
+                        onLogout = sair
+                    )
+
+                    Perfil.ORIENTADOR -> DashboardEmBreveScreen("Orientador", sair)
+                    null -> Unit
+                }
+            }
         }
 
+        composable(Screen.Members.route) {
+            Protegida(navController, Acesso.todos) {
+                TelaMembrosScreen(
+                    onNavigateBottomBar = navigateBottomBar
+                )
+            }
+        }
         composable(Screen.RegisterMember.route) {
-            RegisterMemberScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateBottomBar = navigateBottomBar
-            )
+            Protegida(navController, Acesso.cadastroMembro) {
+                RegisterMemberScreen(
+                    onBack = { navController.popBackStack() },
+                    onNavigateBottomBar = navigateBottomBar
+                )
+            }
         }
         composable(Screen.RegisterProject.route) {
-            RegisterProjectScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateBottomBar = navigateBottomBar
-            )
+            Protegida(navController, Acesso.registroProjeto) {
+                RegisterProjectScreen(
+                    onBack = { navController.popBackStack() },
+                    onNavigateBottomBar = navigateBottomBar
+                )
+            }
         }
         composable(Screen.Reports.route) {
-            ReportsScreen(
-                onGenerateReport = { navController.navigate(Screen.ReportGenerated.route) },
-                onNavigateBottomBar = navigateBottomBar
-            )
+            Protegida(navController, Acesso.todos) {
+                ReportsScreen(
+                    onGenerateReport = { navController.navigate(Screen.ReportGenerated.route) },
+                    onNavigateBottomBar = navigateBottomBar
+                )
+            }
         }
         composable(Screen.ReportGenerated.route) {
-            ReportGeneratedScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateBottomBar = navigateBottomBar
-            )
+            Protegida(navController, Acesso.todos) {
+                ReportGeneratedScreen(
+                    onBack = { navController.popBackStack() },
+                    onNavigateBottomBar = navigateBottomBar
+                )
+            }
+        }
+        composable(Screen.Pontos.route) {
+    Protegida(navController, Acesso.todos) {
+        TelaPontosScreen(
+            onNavigateBottomBar = navigateBottomBar
+        )
+    }
+}
+    }
+}
+
+@Composable
+private fun Protegida(
+    navController: NavHostController,
+    permitidos: Set<Perfil>,
+    conteudo: @Composable () -> Unit
+) {
+    val perfil = Session.perfil
+    if (perfil != null && perfil in permitidos) {
+        conteudo()
+    } else {
+        LaunchedEffect(Unit) {
+            val destino = if (perfil == null) Screen.Login.route else Screen.Home.route
+            navController.navigate(destino) {
+                popUpTo(navController.graph.id) { inclusive = true }
+            }
         }
     }
 }
