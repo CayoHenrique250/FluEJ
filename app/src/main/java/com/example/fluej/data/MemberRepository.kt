@@ -3,8 +3,6 @@ package com.example.fluej.data
 import android.util.Log
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.CancellationException
-import io.github.jan.supabase.postgrest.query.filter.eq
-import io.github.jan.supabase.postgrest.query.filter
 
 class MemberRepository(
     private val memberDao: MemberDao
@@ -42,75 +40,30 @@ class MemberRepository(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e(
-                "SupabaseErro",
-                "Falha ao baixar membros: ${e.message}",
-                e
-            )
+            Log.e("SupabaseErro", "Falha ao baixar membros: ${e.message}", e)
         }
     }
 
-    suspend fun atualizarSituacao(
-        membro: Member,
-        ativo: Boolean
-    ): Boolean {
-        val atualizado = membro.copy(
-            ativo = ativo,
-            isSynced = false
-        )
+    suspend fun atualizarSituacao(membro: Member, ativo: Boolean): Boolean {
+        val atualizado = membro.copy(ativo = ativo, isSynced = false)
+        memberDao.updateMember(atualizado)
+        return enviarParaSupabase(atualizado)
+    }
 
+    suspend fun definirAtivo(member: Member, ativo: Boolean) {
+        atualizarSituacao(member, ativo)
+    }
+
+    private suspend fun enviarParaSupabase(member: Member): Boolean {
         return try {
-            // Atualiza o registro remoto identificado pelo ID.
-            supabase.postgrest["members"].update(
-                {
-                    set("ativo", ativo)
-                }
-            ) {
-                filter {
-                    eq("id", membro.id)
-                }
-            }
-
-            // Atualiza o registro local após o sucesso remoto.
-            memberDao.updateMember(
-                atualizado.copy(isSynced = true)
-            )
-
+            supabase.postgrest["members"].upsert(member)
+            memberDao.updateMember(member.copy(isSynced = true))
             true
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e(
-                "SupabaseErro",
-                "Falha ao atualizar situação de ${membro.nome}: ${e.message}",
-                e
-            )
-
+            Log.e("SupabaseErro", "Falha ao enviar ${member.nome}: ${e.message}", e)
             false
-        }
-    }
-
-    suspend fun definirAtivo(member: Member, ativo: Boolean) {
-        val atualizado = member.copy(ativo = ativo, isSynced = false)
-        memberDao.updateMember(atualizado)
-        enviarParaSupabase(atualizado)
-    }
-
-    private suspend fun enviarParaSupabase(member: Member) {
-        try {
-            supabase.postgrest["members"].upsert(member)
-
-            memberDao.updateMember(
-                member.copy(isSynced = true)
-            )
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.e(
-                "SupabaseErro",
-                "Falha ao enviar ${member.nome}: ${e.message}",
-                e
-            )
         }
     }
 }

@@ -46,6 +46,12 @@ fun AppNavigation() {
     val scope = rememberCoroutineScope()
 
     val navigateBottomBar: (String) -> Unit = { route ->
+    if (route == Screen.Home.route) {
+        val voltou = navController.popBackStack(Screen.Home.route, inclusive = false)
+        if (!voltou) {
+            navController.navigate(Screen.Home.route) { launchSingleTop = true }
+        }
+    } else {
         navController.navigate(route) {
             popUpTo(Screen.Home.route) {
                 saveState = true
@@ -54,6 +60,7 @@ fun AppNavigation() {
             restoreState = true
         }
     }
+}
 
     val sair: () -> Unit = {
         scope.launch {

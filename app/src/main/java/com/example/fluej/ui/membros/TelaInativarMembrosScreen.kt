@@ -60,6 +60,7 @@ fun TelaInativarMembroScreen(
             erro = null
 
             try {
+                repository.sincronizarPendentes()
                 repository.baixarDoSupabase()
                 membros = repository.getMembrosLocais()
             } catch (e: Exception) {
@@ -81,8 +82,8 @@ fun TelaInativarMembroScreen(
     ): List<Member> {
         return lista.filter { membro ->
             membro.nome.contains(busca.trim(), ignoreCase = true) &&
-                (setor == "Todos" ||
-                    membro.setor.equals(setor, ignoreCase = true))
+                    (setor == "Todos" ||
+                            membro.setor.equals(setor, ignoreCase = true))
         }
     }
 
@@ -116,7 +117,7 @@ fun TelaInativarMembroScreen(
         },
         bottomBar = {
             BottomNavBar(
-                selectedTab = Screen.Members.route,
+                selectedTab = Screen.InativarMembro.route,
                 onNavigate = onNavigateBottomBar
             )
         }
@@ -242,36 +243,23 @@ fun TelaInativarMembroScreen(
                             salvando = true
 
                             try {
-                                val sucesso = repository.atualizarSituacao(
+                                val sincronizado = repository.atualizarSituacao(
                                     membro = membro,
                                     ativo = novoStatus
                                 )
 
-                                if (sucesso) {
-                                    membros = membros.map {
-                                        if (it.id == membro.id) {
-                                            it.copy(
-                                                ativo = novoStatus,
-                                                isSynced = true
-                                            )
-                                        } else {
-                                            it
-                                        }
-                                    }
+                                membros = repository.getMembrosLocais()
+                                selecionado = null
 
-                                    selecionado = null
-                                    snackbar.showSnackbar(
-                                        "Situação atualizada com sucesso."
-                                    )
-                                } else {
-                                    snackbar.showSnackbar(
-                                        "Não foi possível atualizar. Verifique a conexão e as permissões do Supabase."
-                                    )
-                                }
-                            } catch (e: Exception) {
                                 snackbar.showSnackbar(
-                                    e.message ?: "Erro ao atualizar membro."
+                                    if (sincronizado) {
+                                        "Situação atualizada com sucesso."
+                                    } else {
+                                        "Salvo no aparelho. Será enviado ao Supabase quando houver conexão."
+                                    }
                                 )
+                            } catch (e: Exception) {
+                                snackbar.showSnackbar(e.message ?: "Erro ao atualizar membro.")
                             } finally {
                                 salvando = false
                             }
