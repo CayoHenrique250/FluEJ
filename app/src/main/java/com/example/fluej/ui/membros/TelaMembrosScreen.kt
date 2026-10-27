@@ -4,67 +4,52 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.fluej.ui.components.BottomNavBar
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fluej.data.Options
 import com.example.fluej.navigation.Screen
+import com.example.fluej.ui.components.BottomNavBar
+import com.example.fluej.ui.viewmodels.MembrosViewModel
 
 @Composable
 fun TelaMembrosScreen(
     onMembroClick: (Membro) -> Unit = {},
-    onNavigateBottomBar: (String) -> Unit
+    onNavigateBottomBar: (String) -> Unit,
+    viewModel: MembrosViewModel = viewModel()
 ) {
     var busca by remember { mutableStateOf("") }
     var filtro by remember { mutableStateOf("Todos") }
+    var membroSelecionado by remember { mutableStateOf<Membro?>(null) }
 
-    val membros = remember {
-        listOf(
-            Membro("Anninha Clarinha", "Gestor(a) RH", 120, true),
-            Membro("Barbatana Lady", "Gestor(a) Marketing", 10, true),
-            Membro("Creuza de Jesus", "Membro de RH", 220, true),
-            Membro("Julinho Cavalieri", "Presidente", 520, true),
-            Membro("Luanzinho do Grau", "Membro de projetos", 1560, false)
-        )
+    LaunchedEffect(Unit) { viewModel.atualizar() }
+
+    val filtros = buildList {
+        add("Todos")
+        add("Ativos")
+        add("Inativos")
+        if (!viewModel.escopoPorSetor) addAll(Options.setores)
     }
 
-    fun obterSetor(cargo: String): String {
-        return when {
-            cargo.contains("marketing", ignoreCase = true) ->
-                "Marketing"
-
-            cargo.contains("projetos", ignoreCase = true) ->
-                "Projetos"
-
-            cargo.contains("rh", ignoreCase = true) ->
-                "RH"
-
-            cargo.contains("vendas", ignoreCase = true) ->
-                "Vendas"
-
-            else -> ""
-        }
-    }
-
-    val membrosFiltrados = membros.filter { membro ->
+    val membrosFiltrados = viewModel.membros.filter { membro ->
         val correspondeBusca =
             membro.nome.contains(busca, ignoreCase = true) ||
                     membro.cargo.contains(busca, ignoreCase = true)
 
-        val setor = obterSetor(membro.cargo)
-
         val correspondeFiltro = when (filtro) {
+            "Todos" -> true
             "Ativos" -> membro.ativo
             "Inativos" -> !membro.ativo
-            "Marketing", "Projetos", "RH", "Vendas" ->
-                setor == filtro
-
-            else -> true
+            else -> membro.setor == filtro
         }
 
         correspondeBusca && correspondeFiltro
@@ -99,6 +84,10 @@ fun TelaMembrosScreen(
                 Text("Gestão de membros")
             }
 
+            if (viewModel.carregando) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+
             BarraBusca(
                 texto = busca,
                 onTextoChange = { busca = it },
@@ -108,6 +97,7 @@ fun TelaMembrosScreen(
             )
 
             FiltrosMembros(
+                filtros = filtros,
                 filtroSelecionado = filtro,
                 onFiltroChange = { filtro = it },
                 modifier = Modifier
@@ -129,15 +119,18 @@ fun TelaMembrosScreen(
             ) {
                 items(
                     items = membrosFiltrados,
-                    key = { it.nome }
+                    key = { it.id }
                 ) { membro ->
                     CardMembro(
                         membro = membro,
-                        onClick = { onMembroClick(membro) }
+                        onClick = {
+                            onMembroClick(membro)
+                            if (viewModel.podeGerenciar) membroSelecionado = membro
+                        }
                     )
                 }
 
-                if (membrosFiltrados.isEmpty()) {
+                if (membrosFiltrados.isEmpty() && !viewModel.carregando) {
                     item {
                         Text(
                             text = "Nenhum membro encontrado.",
@@ -148,6 +141,30 @@ fun TelaMembrosScreen(
                 }
             }
         }
+    }
 
+    membroSelecionado?.let { membro ->
+        AlertDialog(
+            onDismissRequest = { membroSelecionado = null },
+            title = { Text(if (membro.ativo) "Inativar membro" else "Reativar membro") },
+            text = {
+                Text(
+                    if (membro.ativo) {
+                        "Deseja inativar ${membro.nome}? O histórico de pontos será mantido."
+                    } else {
+                        "Deseja reativar ${membro.nome}?"
+                    }
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.alternarAtivo(membro)
+                    membroSelecionado = null
+                }) { Text("Confirmar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { membroSelecionado = null }) { Text("Cancelar") }
+            }
+        )
     }
 }

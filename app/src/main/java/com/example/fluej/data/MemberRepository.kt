@@ -90,6 +90,12 @@ class MemberRepository(
         }
     }
 
+    suspend fun definirAtivo(member: Member, ativo: Boolean) {
+        val atualizado = member.copy(ativo = ativo, isSynced = false)
+        memberDao.updateMember(atualizado)
+        enviarParaSupabase(atualizado)
+    }
+
     private suspend fun enviarParaSupabase(member: Member) {
         try {
             supabase.postgrest["members"].upsert(member)

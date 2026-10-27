@@ -62,7 +62,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private suspend fun carregar() {
         val (inicio, fim) = ReportDates.intervalo(Periodo.MENSAL)
 
-        val membros = memberRepository.getMembrosLocais().filter { it.setor == setor }
+        val membros = memberRepository.getMembrosLocais().filter { it.setor == setor && it.ativo }
         val ids = membros.map { it.id }.toSet()
 
         val pontosPorMembro = activityRepository.getPorPeriodo(inicio, fim)
