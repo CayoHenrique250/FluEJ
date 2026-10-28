@@ -12,20 +12,11 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun FiltrosMembros(
+    filtros: List<String>,
     filtroSelecionado: String,
     onFiltroChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val filtros = listOf(
-        "Todos",
-        "Ativos",
-        "Inativos",
-        "Marketing",
-        "Projetos",
-        "RH",
-        "Vendas"
-    )
-
     Row(
         modifier = modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp)

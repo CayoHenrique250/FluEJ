@@ -42,11 +42,13 @@ private const val RANKING_RESUMIDO = 3
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
+fun DashboardRHScreen(
     onNavigateToRegister: () -> Unit,
     onNavigateToRegisterProject: () -> Unit,
     onNavigateBottomBar: (String) -> Unit,
     onNavigateToMembers: () -> Unit,
+    onNavigateToDeactivateMember: () -> Unit,
+    onLogout: () -> Unit,
     viewModel: DashboardViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -71,6 +73,9 @@ fun HomeScreen(
                 actions = {
                     IconButton(onClick = emBreve) {
                         Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = TextPrimary)
+                    }
+                    TextButton(onClick = onLogout) {
+                        Text("Sair", color = TextPrimary)
                     }
                 }
             )
@@ -189,12 +194,17 @@ fun HomeScreen(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Ações rápidas", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextPrimary)
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    AcaoRapida("Registrar projeto", Icons.Default.Folder, Modifier.weight(1f), onNavigateToRegisterProject)
+                    AcaoRapida(
+                        "Registrar projeto",
+                        Icons.Default.Folder,
+                        Modifier.weight(1f),
+                        onNavigateToRegisterProject
+                    )
                     AcaoRapida("Registrar pontos", Icons.Default.Star, Modifier.weight(1f), emBreve)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     AcaoRapida("Cadastrar membro", Icons.Default.PersonAdd, Modifier.weight(1f), onNavigateToRegister)
-                    AcaoRapida("Inativar membro", Icons.Default.Block, Modifier.weight(1f), emBreve)
+                    AcaoRapida( texto = "Inativar membro", icone = Icons.Default.Block, modifier = Modifier.weight(1f), onClick = onNavigateToDeactivateMember)
                 }
             }
 
@@ -304,13 +314,13 @@ private fun DocumentoPendenteRow(titulo: String, quantidade: Int) {
     }
 }
 
-@Composable
-private fun AcaoRapida(
-    texto: String,
-    icone: ImageVector,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
+@Composable 
+private fun AcaoRapida( 
+    texto: String, 
+    icone: ImageVector, 
+    modifier: Modifier = Modifier, 
+    onClick: () -> Unit 
+)  {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.height(52.dp),

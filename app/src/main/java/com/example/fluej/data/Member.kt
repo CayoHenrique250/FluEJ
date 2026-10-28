@@ -20,6 +20,7 @@ data class Member(
     val telefone: String,
     val cargo: String,
     val setor: String,
+    val ativo: Boolean = true,
     @Transient
     val isSynced: Boolean = false
 )

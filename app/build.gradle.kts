@@ -43,6 +43,7 @@ kotlin {
 }
 
 dependencies {
+    implementation("io.github.jan-tennert.supabase:gotrue-kt")
     implementation("androidx.navigation:navigation-compose:2.8.0")
     implementation("androidx.compose.material:material-icons-extended")
 

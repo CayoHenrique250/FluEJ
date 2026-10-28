@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +39,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import com.example.fluej.R
 import androidx.compose.ui.layout.ContentScale
+import com.example.fluej.data.AuthRepository 
+import com.example.fluej.data.ResultadoLogin 
+import kotlinx.coroutines.launch
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
 
@@ -45,8 +49,10 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
     var password by remember { mutableStateOf(value = "") }
     var isPasswordVisible by remember { mutableStateOf(value = false) }
     var isEmailError by remember { mutableStateOf(value = false) }
+    var isLoading by remember { mutableStateOf(value = false) }
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -139,10 +145,23 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 if (email.isBlank()) {
                     isEmailError = true
                 } else {
-                    Toast.makeText(context, "Login realizado com sucesso", Toast.LENGTH_LONG).show()
-                    onLoginSuccess()
+                    isLoading = true
+                    scope.launch {
+                        val resultado = AuthRepository.entrar(email.trim(), password)
+                        isLoading = false
+                        when (resultado) {
+                            is ResultadoLogin.Sucesso -> {
+                                Toast.makeText(context, "Login realizado com sucesso", Toast.LENGTH_LONG).show()
+                                onLoginSuccess()
+                            }
+                            is ResultadoLogin.Erro -> {
+                                Toast.makeText(context, resultado.mensagem, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
                 }
             },
+            enabled = !isLoading,
             modifier = Modifier.fillMaxWidth(0.75f),
             shape = MaterialTheme.shapes.medium
         ) {

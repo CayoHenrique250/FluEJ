@@ -53,7 +53,7 @@ class RegisterProjectViewModel(application: Application) : AndroidViewModel(appl
 
     private suspend fun carregarMembros() {
         membrosDoSetor = memberRepository.getMembrosLocais()
-            .filter { it.setor == setor }
+            .filter { it.setor == setor && it.ativo }
             .sortedBy { it.nome.lowercase() }
         selecionados = selecionados.filter { id -> membrosDoSetor.any { it.id == id } }.toSet()
     }
