@@ -15,6 +15,12 @@ import com.example.fluej.data.ReportDates
 import com.example.fluej.data.Session
 import kotlinx.coroutines.launch
 
+import android.util.Log
+import com.example.fluej.data.api.ApiRepository
+import com.example.fluej.data.api.DocumentoPendenteDto
+import kotlinx.coroutines.CancellationException
+
+
 data class RankingItem(val nome: String, val pontos: Int)
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
@@ -23,6 +29,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private val memberRepository = MemberRepository(db.memberDao())
     private val activityRepository = ActivityRepository(db.activityDao())
     private val projectRepository = ProjectRepository(db)
+    private val apiRepository = ApiRepository(db.apiCacheDao())
+
+    var documentos by mutableStateOf<List<DocumentoPendenteDto>>(emptyList())
+        private set
 
     var totalProjetos by mutableStateOf(0)
         private set
@@ -42,9 +52,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         private set
 
     fun atualizar() {
+
         viewModelScope.launch {
             carregando = true
             try {
+
+                carregarDocumentos()
                 carregar()
                 memberRepository.sincronizarPendentes()
                 activityRepository.sincronizarPendentes()
@@ -55,6 +68,18 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 carregar()
             } finally {
                 carregando = false
+            }
+        }
+    }
+
+    private fun carregarDocumentos() {
+        viewModelScope.launch {
+            try {
+                documentos = apiRepository.documentosPendentes().dados
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("ApiErro", "Documentos pendentes: ${e.message}", e)
             }
         }
     }

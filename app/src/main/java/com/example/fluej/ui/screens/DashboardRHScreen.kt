@@ -37,6 +37,7 @@ import com.example.fluej.ui.theme.*
 import com.example.fluej.ui.viewmodels.DashboardViewModel
 import java.text.NumberFormat
 import java.util.Locale
+import com.example.fluej.ui.components.SinoNotificacoes
 
 private const val RANKING_RESUMIDO = 3
 
@@ -71,9 +72,7 @@ fun DashboardRHScreen(
                     Text("FluEJ", fontWeight = FontWeight.Bold, fontSize = 28.sp, color = TextPrimary)
                 },
                 actions = {
-                    IconButton(onClick = emBreve) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = TextPrimary)
-                    }
+                    SinoNotificacoes()
                     TextButton(onClick = onLogout) {
                         Text("Sair", color = TextPrimary)
                     }
@@ -187,8 +186,11 @@ fun DashboardRHScreen(
                         modifier = Modifier.clickable { emBreve() }
                     )
                 }
-                DocumentoPendenteRow("Termos de voluntariado", 2)
-                DocumentoPendenteRow("Termos de encerramento", 5)
+                if (viewModel.documentos.isEmpty()) {
+                    Text("Nenhum documento pendente.", fontSize = 13.sp, color = TextSecondary)
+                } else {
+                    viewModel.documentos.forEach { DocumentoPendenteRow(it.titulo, it.quantidade) }
+                }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -204,7 +206,12 @@ fun DashboardRHScreen(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     AcaoRapida("Cadastrar membro", Icons.Default.PersonAdd, Modifier.weight(1f), onNavigateToRegister)
-                    AcaoRapida( texto = "Inativar membro", icone = Icons.Default.Block, modifier = Modifier.weight(1f), onClick = onNavigateToDeactivateMember)
+                    AcaoRapida(
+                        texto = "Inativar membro",
+                        icone = Icons.Default.Block,
+                        modifier = Modifier.weight(1f),
+                        onClick = onNavigateToDeactivateMember
+                    )
                 }
             }
 
@@ -314,13 +321,13 @@ private fun DocumentoPendenteRow(titulo: String, quantidade: Int) {
     }
 }
 
-@Composable 
-private fun AcaoRapida( 
-    texto: String, 
-    icone: ImageVector, 
-    modifier: Modifier = Modifier, 
-    onClick: () -> Unit 
-)  {
+@Composable
+private fun AcaoRapida(
+    texto: String,
+    icone: ImageVector,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.height(52.dp),
