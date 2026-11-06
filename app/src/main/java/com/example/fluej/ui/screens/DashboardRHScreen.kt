@@ -49,6 +49,7 @@ fun DashboardRHScreen(
     onNavigateBottomBar: (String) -> Unit,
     onNavigateToMembers: () -> Unit,
     onNavigateToDeactivateMember: () -> Unit,
+    onNavigateToPoints: () -> Unit,
     onLogout: () -> Unit,
     viewModel: DashboardViewModel = viewModel()
 ) {
@@ -202,7 +203,8 @@ fun DashboardRHScreen(
                         Modifier.weight(1f),
                         onNavigateToRegisterProject
                     )
-                    AcaoRapida("Registrar pontos", Icons.Default.Star, Modifier.weight(1f), emBreve)
+                    AcaoRapida(texto = "Registrar pontos",icone = Icons.Default.Star, modifier = Modifier.weight(1f), onClick = onNavigateToPoints
+)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     AcaoRapida("Cadastrar membro", Icons.Default.PersonAdd, Modifier.weight(1f), onNavigateToRegister)
