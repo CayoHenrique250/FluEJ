@@ -11,6 +11,7 @@ import com.example.fluej.data.AuthRepository
 import com.example.fluej.data.Perfil
 import com.example.fluej.data.Session
 import com.example.fluej.ui.screens.DashboardEmBreveScreen
+import com.example.fluej.ui.screens.DashboardOrientadorScreen
 import com.example.fluej.ui.screens.DashboardRHScreen
 import com.example.fluej.ui.screens.RegisterMemberScreen
 import com.example.fluej.ui.screens.RegisterProjectScreen
@@ -116,7 +117,10 @@ fun AppNavigation() {
                         onLogout = sair
                     )
 
-                    Perfil.ORIENTADOR -> DashboardEmBreveScreen("Orientador", sair)
+                    Perfil.ORIENTADOR -> DashboardOrientadorScreen(
+                        onNavigateBottomBar = navigateBottomBar,
+                        onLogout = sair
+                    )
                     null -> Unit
                 }
             }

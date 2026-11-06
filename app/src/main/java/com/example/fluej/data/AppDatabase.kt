@@ -16,9 +16,10 @@ import com.example.fluej.data.api.ApiCacheDao
         Activity::class,
         Project::class,
         ProjectMember::class,
-        ApiCache::class
+        ApiCache::class,
+        DesempenhoMensal::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -27,6 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun activityDao(): ActivityDao
     abstract fun projectDao(): ProjectDao
     abstract fun apiCacheDao(): ApiCacheDao
+    abstract fun desempenhoDao(): DesempenhoDao
 
     companion object {
 
@@ -47,7 +49,23 @@ abstract class AppDatabase : RoomDatabase() {
                 )
             }
         }
-
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `desempenho_mensal` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `mes` TEXT NOT NULL,
+                        `ordem` INTEGER NOT NULL,
+                        `pontos` INTEGER NOT NULL,
+                        `horas` REAL NOT NULL,
+                        `membrosAtivos` INTEGER NOT NULL,
+                        `projetosAtivos` INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
 
@@ -56,7 +74,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "fluej_database"
                 )
-                    .addMigrations(MIGRATION_6_7)
+                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8)
                     .fallbackToDestructiveMigration()
                     .build()
 

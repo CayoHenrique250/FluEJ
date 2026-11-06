@@ -42,7 +42,10 @@ import androidx.compose.ui.layout.ContentScale
 import com.example.fluej.data.AuthRepository 
 import com.example.fluej.data.ResultadoLogin 
 import kotlinx.coroutines.launch
-@Composable
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll@Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
 
     var email by remember { mutableStateOf(value = "") }
@@ -57,6 +60,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .imePadding()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -80,6 +85,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 isEmailError = false
             },
             shape = MaterialTheme.shapes.medium,
+            singleLine = true,
             label = {Text("E-mail")},
             leadingIcon = {
                 Icon(
@@ -88,7 +94,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 )
             },
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email
+                keyboardType = KeyboardType.Email, imeAction = ImeAction.Next
             ),
             supportingText = {
                 if (isEmailError) Text(text = "O email não pode ser vazio!")
@@ -105,6 +111,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 password = it
             },
             shape = MaterialTheme.shapes.medium,
+            singleLine = true,
             label = { Text("Senha") },
             leadingIcon = {
                 Icon(
@@ -134,7 +141,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 } else {
                     PasswordVisualTransformation()
                 },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
 
         )
 
