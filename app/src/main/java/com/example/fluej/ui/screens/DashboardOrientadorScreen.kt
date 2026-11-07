@@ -214,7 +214,7 @@ private fun DashboardOrientadorConteudo(
     }
 }
 @Composable
-private fun CartaoMetrica(valor: String, rotulo: String, modifier: Modifier = Modifier) {
+fun CartaoMetrica(valor: String, rotulo: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
@@ -242,7 +242,7 @@ private fun CartaoMetrica(valor: String, rotulo: String, modifier: Modifier = Mo
 }
 
 @Composable
-private fun GraficoBarras(valores: List<DesempenhoMensal>) {
+fun GraficoBarras(valores: List<DesempenhoMensal>) {
     val maximo = (valores.maxOfOrNull { it.pontos } ?: 1).coerceAtLeast(1)
     Column {
         Row(
@@ -295,7 +295,7 @@ private fun GraficoBarras(valores: List<DesempenhoMensal>) {
     }
 }
 @Composable
-private fun LinhaRanking(nome: String, pontos: Int, maximo: Int) {
+fun LinhaRanking(nome: String, pontos: Int, maximo: Int) {
     val fracao = (pontos.toFloat() / maximo.coerceAtLeast(1)).coerceIn(0f, 1f)
     Card(
         modifier = Modifier.fillMaxWidth(),

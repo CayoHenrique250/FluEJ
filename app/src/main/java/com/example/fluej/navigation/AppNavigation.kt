@@ -22,6 +22,7 @@ import com.example.fluej.ui.screens.LoginScreen
 import kotlinx.coroutines.launch
 import com.example.fluej.ui.pontos.TelaPontosScreen
 import com.example.fluej.ui.membros.TelaInativarMembroScreen
+import com.example.fluej.ui.screens.DashboardPresidenteScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -111,7 +112,11 @@ fun AppNavigation() {
                         onLogout = sair
                     )
 
-                    Perfil.PRESIDENTE -> DashboardEmBreveScreen("Presidente", sair)
+                    Perfil.PRESIDENTE -> DashboardPresidenteScreen(
+                        onNavigateToRegister = { navController.navigate(Screen.RegisterMember.route) },
+                        onNavigateBottomBar = navigateBottomBar,
+                        onLogout = sair
+                    )
                     Perfil.PROJETOS, Perfil.COMERCIAL, Perfil.FINANCEIRO -> DashboardEmBreveScreen(
                         titulo = "Gestor de ${Session.departmentOfManager}",
                         onLogout = sair
