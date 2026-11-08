@@ -42,6 +42,8 @@ private object Acesso {
     val todos = Perfil.values().toSet()
     val cadastroMembro = setOf(Perfil.RH, Perfil.PRESIDENTE)
     val registroProjeto = todos - Perfil.ORIENTADOR
+    val pontosPresidente = setOf(Perfil.PRESIDENTE)    
+    val registroPontos = todos - Perfil.ORIENTADOR    
 }
 
 @Composable
@@ -103,7 +105,7 @@ fun AppNavigation() {
 }
 
         composable(Screen.RegistrarPontos.route) {
-           Protegida(navController, Acesso.todos) {
+           Protegida(navController, Acesso.registroPontos) {
              TelaRegistrarPontosScreen(
                onNavigateBottomBar = navigateBottomBar,
                 onBack = {
@@ -194,14 +196,12 @@ fun AppNavigation() {
             }
         }
         composable(Screen.Pontos.route) {
-            TelaRegistrarPontosScreen(
-                onBack = {navController.popBackStack()},
-                onSalvar = { membro, projeto, descricao, pontos ->
-                // lembrar de fazer a integração com o banco de dados veio aqui  
-                },
-                onNavigateBottomBar = navigateBottomBar
-            )
-        }
+            Protegida(navController, Acesso.pontosPresidente) {
+                TelaPontosScreen(
+                    onNavigateBottomBar = navigateBottomBar
+                )
+            }
+}
     }
 }
 
