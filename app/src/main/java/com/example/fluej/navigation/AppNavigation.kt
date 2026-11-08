@@ -11,6 +11,7 @@ import com.example.fluej.data.AuthRepository
 import com.example.fluej.data.Perfil
 import com.example.fluej.data.Session
 import com.example.fluej.ui.screens.DashboardEmBreveScreen
+import com.example.fluej.ui.screens.DashboardOrientadorScreen
 import com.example.fluej.ui.screens.DashboardRHScreen
 import com.example.fluej.ui.screens.RegisterMemberScreen
 import com.example.fluej.ui.screens.RegisterProjectScreen
@@ -21,6 +22,7 @@ import com.example.fluej.ui.screens.LoginScreen
 import kotlinx.coroutines.launch
 import com.example.fluej.ui.pontos.TelaPontosScreen
 import com.example.fluej.ui.membros.TelaInativarMembroScreen
+import com.example.fluej.ui.screens.DashboardPresidenteScreen
 import com.example.fluej.ui.pontos.TelaRegistrarPontosScreen
 
 sealed class Screen(val route: String) {
@@ -133,13 +135,20 @@ fun AppNavigation() {
     onLogout = sair
 )
 
-                    Perfil.PRESIDENTE -> DashboardEmBreveScreen("Presidente", sair)
+                    Perfil.PRESIDENTE -> DashboardPresidenteScreen(
+                        onNavigateToRegister = { navController.navigate(Screen.RegisterMember.route) },
+                        onNavigateBottomBar = navigateBottomBar,
+                        onLogout = sair
+                    )
                     Perfil.PROJETOS, Perfil.COMERCIAL, Perfil.FINANCEIRO -> DashboardEmBreveScreen(
                         titulo = "Gestor de ${Session.departmentOfManager}",
                         onLogout = sair
                     )
 
-                    Perfil.ORIENTADOR -> DashboardEmBreveScreen("Orientador", sair)
+                    Perfil.ORIENTADOR -> DashboardOrientadorScreen(
+                        onNavigateBottomBar = navigateBottomBar,
+                        onLogout = sair
+                    )
                     null -> Unit
                 }
             }
