@@ -48,21 +48,21 @@ fun AppNavigation() {
     val scope = rememberCoroutineScope()
 
     val navigateBottomBar: (String) -> Unit = { route ->
-    if (route == Screen.Home.route) {
-        val voltou = navController.popBackStack(Screen.Home.route, inclusive = false)
-        if (!voltou) {
-            navController.navigate(Screen.Home.route) { launchSingleTop = true }
-        }
-    } else {
-        navController.navigate(route) {
-            popUpTo(Screen.Home.route) {
-                saveState = true
+        if (route == Screen.Home.route) {
+            val voltou = navController.popBackStack(Screen.Home.route, inclusive = false)
+            if (!voltou) {
+                navController.navigate(Screen.Home.route) { launchSingleTop = true }
             }
-            launchSingleTop = true
-            restoreState = true
+        } else {
+            navController.navigate(route) {
+                popUpTo(Screen.Home.route) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
     }
-}
 
     val sair: () -> Unit = {
         scope.launch {
@@ -185,15 +185,14 @@ fun AppNavigation() {
             }
         }
         composable(Screen.Pontos.route) {
-    TelaRegistrarPontosScreen(
-        onSalvar = { membro, projeto, descricao, pontos ->
-            // lembrar de fazer a integração com o banco de dados veio aqui  
-        },
-        onNavigateBottomBar = { rota ->
-            navigateBottomBar(rota)
+            TelaRegistrarPontosScreen(
+                onBack = {navController.popBackStack()},
+                onSalvar = { membro, projeto, descricao, pontos ->
+                // lembrar de fazer a integração com o banco de dados veio aqui  
+                },
+                onNavigateBottomBar = navigateBottomBar
+            )
         }
-    )
-}
     }
 }
 

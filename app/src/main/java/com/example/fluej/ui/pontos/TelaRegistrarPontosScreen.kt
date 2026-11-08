@@ -7,7 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.KeyboardType
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -21,12 +20,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fluej.ui.components.BottomNavBar
 import com.example.fluej.navigation.Screen
+import androidx.compose.ui.text.input.KeyboardType
 
 private val FundoTela = Color(0xFFF2F2F2)
 private val PretoFluEJ = Color(0xFF252525)
 
 @Composable
 fun TelaRegistrarPontosScreen(
+    onBack: () -> Unit,
+    
     membros: List<String> = listOf(
         "Anna Clara",
         "Cayo Henrique",
