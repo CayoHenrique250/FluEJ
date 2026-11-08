@@ -232,6 +232,7 @@ fun CustomTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
             shape = RoundedCornerShape(12.dp),
             placeholder = { Text(placeholder, color = TextSecondary) },
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
