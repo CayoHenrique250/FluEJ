@@ -21,6 +21,7 @@ import com.example.fluej.ui.screens.LoginScreen
 import kotlinx.coroutines.launch
 import com.example.fluej.ui.pontos.TelaPontosScreen
 import com.example.fluej.ui.membros.TelaInativarMembroScreen
+import com.example.fluej.ui.pontos.TelaRegistrarPontosScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -32,6 +33,7 @@ sealed class Screen(val route: String) {
     object ReportGenerated : Screen("report_generated")
     object Members : Screen("members")
     object InativarMembro : Screen("inativar_membro")
+    object RegistrarPontos : Screen("registrar_pontos")
 }
 
 private object Acesso {
@@ -46,21 +48,21 @@ fun AppNavigation() {
     val scope = rememberCoroutineScope()
 
     val navigateBottomBar: (String) -> Unit = { route ->
-    if (route == Screen.Home.route) {
-        val voltou = navController.popBackStack(Screen.Home.route, inclusive = false)
-        if (!voltou) {
-            navController.navigate(Screen.Home.route) { launchSingleTop = true }
-        }
-    } else {
-        navController.navigate(route) {
-            popUpTo(Screen.Home.route) {
-                saveState = true
+        if (route == Screen.Home.route) {
+            val voltou = navController.popBackStack(Screen.Home.route, inclusive = false)
+            if (!voltou) {
+                navController.navigate(Screen.Home.route) { launchSingleTop = true }
             }
-            launchSingleTop = true
-            restoreState = true
+        } else {
+            navController.navigate(route) {
+                popUpTo(Screen.Home.route) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
     }
-}
 
     val sair: () -> Unit = {
         scope.launch {
@@ -98,17 +100,38 @@ fun AppNavigation() {
     }
 }
 
+        composable(Screen.RegistrarPontos.route) {
+           Protegida(navController, Acesso.todos) {
+             TelaRegistrarPontosScreen(
+               onNavigateBottomBar = navigateBottomBar,
+                onBack = {
+                 navController.popBackStack()
+            }
+        )
+    }
+}
         composable(Screen.Home.route) {
             Protegida(navController, Acesso.todos) {
                 when (Session.perfil) {
-                    Perfil.RH -> DashboardRHScreen(
-                        onNavigateToRegister = { navController.navigate(Screen.RegisterMember.route) },
-                        onNavigateToRegisterProject = { navController.navigate(Screen.RegisterProject.route) },
-                        onNavigateBottomBar = navigateBottomBar,
-                        onNavigateToDeactivateMember = {navController.navigate(Screen.InativarMembro.route)},
-                        onNavigateToMembers = { navController.navigate(Screen.Members.route) },
-                        onLogout = sair
-                    )
+                   Perfil.RH -> DashboardRHScreen(
+                                 onNavigateToRegister = {
+                                 navController.navigate(Screen.RegisterMember.route)
+    },
+                             onNavigateToRegisterProject = {
+                             navController.navigate(Screen.RegisterProject.route)
+    },
+                             onNavigateBottomBar = navigateBottomBar,
+                             onNavigateToDeactivateMember = {
+                             navController.navigate(Screen.InativarMembro.route)
+    },
+                            onNavigateToMembers = {
+                            navController.navigate(Screen.Members.route)
+    },
+                           onNavigateToPoints = {
+                           navController.navigate(Screen.RegistrarPontos.route)
+},
+    onLogout = sair
+)
 
                     Perfil.PRESIDENTE -> DashboardEmBreveScreen("Presidente", sair)
                     Perfil.PROJETOS, Perfil.COMERCIAL, Perfil.FINANCEIRO -> DashboardEmBreveScreen(
@@ -162,12 +185,14 @@ fun AppNavigation() {
             }
         }
         composable(Screen.Pontos.route) {
-    Protegida(navController, Acesso.todos) {
-        TelaPontosScreen(
-            onNavigateBottomBar = navigateBottomBar
-        )
-    }
-}
+            TelaRegistrarPontosScreen(
+                onBack = {navController.popBackStack()},
+                onSalvar = { membro, projeto, descricao, pontos ->
+                // lembrar de fazer a integração com o banco de dados veio aqui  
+                },
+                onNavigateBottomBar = navigateBottomBar
+            )
+        }
     }
 }
 

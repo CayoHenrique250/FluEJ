@@ -121,7 +121,6 @@ fun TelaPontosScreen(
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // Cabeçalho da tabela
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
