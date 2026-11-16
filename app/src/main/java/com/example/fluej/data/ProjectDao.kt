@@ -1,3 +1,4 @@
+
 package com.example.fluej.data
 
 import androidx.room.Dao
@@ -8,6 +9,7 @@ import androidx.room.Update
 
 @Dao
 interface ProjectDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProject(project: Project)
 
@@ -22,6 +24,19 @@ interface ProjectDao {
 
     @Update
     suspend fun updateVinculo(vinculo: ProjectMember)
+
+    @Query("SELECT * FROM projetos ORDER BY nome COLLATE NOCASE ASC")
+    suspend fun getAllProjects(): List<Project>
+
+    @Query("""
+        SELECT p.*
+        FROM projetos AS p
+        INNER JOIN projeto_membros AS pm
+            ON p.id = pm.projectId
+        WHERE pm.memberId = :memberId
+        ORDER BY p.nome COLLATE NOCASE ASC
+    """)
+    suspend fun getProjectsByMember(memberId: String): List<Project>
 
     @Query("SELECT * FROM projetos WHERE isSynced = 0")
     suspend fun getProjetosNaoSincronizados(): List<Project>
