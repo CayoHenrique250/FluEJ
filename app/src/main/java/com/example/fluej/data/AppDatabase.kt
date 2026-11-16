@@ -19,7 +19,7 @@ import com.example.fluej.data.api.ApiCacheDao
         ApiCache::class,
         DesempenhoMensal::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -66,6 +66,20 @@ abstract class AppDatabase : RoomDatabase() {
                 )
             }
         }
+        
+        
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    """
+                    ALTER TABLE atividades
+                    ADD COLUMN projectId TEXT
+                    """.trimIndent()
+                )
+            }
+        }
+
+        
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
 
@@ -74,7 +88,11 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "fluej_database"
                 )
-                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8)
+                    .addMigrations(
+                        MIGRATION_6_7,
+                        MIGRATION_7_8,
+                        MIGRATION_8_9
+                    )
                     .fallbackToDestructiveMigration()
                     .build()
 

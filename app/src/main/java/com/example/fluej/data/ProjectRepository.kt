@@ -19,6 +19,14 @@ class ProjectRepository(private val db: AppDatabase) {
     }
 
     suspend fun contarPorSetor(setor: String): Int = dao.contarPorSetor(setor)
+    
+    
+    suspend fun getProjetosLocais(): List<Project> =
+        dao.getAllProjects()
+
+    suspend fun getProjetosDoMembro(memberId: String): List<Project> =
+        dao.getProjectsByMember(memberId)
+
 
     suspend fun sincronizarPendentes() {
         dao.getProjetosNaoSincronizados().forEach { projeto ->

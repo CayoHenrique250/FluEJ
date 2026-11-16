@@ -16,11 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fluej.ui.components.BottomNavBar
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fluej.data.Member
+import com.example.fluej.data.Project
 import com.example.fluej.navigation.Screen
-import androidx.compose.ui.text.input.KeyboardType
+import com.example.fluej.ui.components.BottomNavBar
+import com.example.fluej.ui.viewmodels.PontosViewModel
 
 private val FundoTela = Color(0xFFF2F2F2)
 private val PretoFluEJ = Color(0xFF252525)
@@ -28,37 +32,28 @@ private val PretoFluEJ = Color(0xFF252525)
 @Composable
 fun TelaRegistrarPontosScreen(
     onBack: () -> Unit,
-    
-    membros: List<String> = listOf(
-        "Anna Clara",
-        "Cayo Henrique",
-        "Emilly Vitória",
-        "Jousiclecia",
-        "Sara Naillê"
-    ),
-
-    projetos: List<String> = listOf(
-        "Projeto FluEJ",
-        "Projeto SOSHealth",
-        "Projeto Espaços Maker"
-    ),
-
-    onSalvar: (String, String, String, Int) -> Unit = { _, _, _, _ -> },
-
-    onNavigateBottomBar: (String) -> Unit = {}
+    onNavigateBottomBar: (String) -> Unit = {},
+    pontosViewModel: PontosViewModel = viewModel()
 ) {
+    val membros = pontosViewModel.membros
+    val projetos = pontosViewModel.projetos
+    val membroSelecionado = pontosViewModel.membroSelecionado
+    val projetoSelecionado = pontosViewModel.projetoSelecionado
+    val carregando = pontosViewModel.carregando
+    val salvando = pontosViewModel.salvando
+    val mensagem = pontosViewModel.mensagem.orEmpty()
+    val erroViewModel = pontosViewModel.erro.orEmpty()
 
-    var membroSelecionado by remember { mutableStateOf("") }
-    var projetoSelecionado by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
-    var pontos by remember { mutableStateOf("0") }
+    var pontos by remember { mutableStateOf("") }
+    var erroLocal by remember { mutableStateOf("") }
 
-    var erro by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        pontosViewModel.carregarDados()
+    }
 
     Scaffold(
         containerColor = FundoTela,
-
-
         topBar = {
             Row(
                 modifier = Modifier
@@ -66,10 +61,8 @@ fun TelaRegistrarPontosScreen(
                     .height(56.dp)
                     .background(Color.White)
                     .padding(horizontal = 16.dp),
-
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
                 Text(
                     text = "FluEJ",
                     fontSize = 20.sp,
@@ -86,16 +79,13 @@ fun TelaRegistrarPontosScreen(
                 )
             }
         },
-
         bottomBar = {
             BottomNavBar(
                 selectedTab = Screen.Pontos.route,
                 onNavigate = onNavigateBottomBar
             )
         }
-
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -103,7 +93,6 @@ fun TelaRegistrarPontosScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
         ) {
-
             Spacer(modifier = Modifier.height(18.dp))
 
             Text(
@@ -127,11 +116,14 @@ fun TelaRegistrarPontosScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             CampoSelecaoPontos(
-                valor = membroSelecionado,
+                valor = membroSelecionado?.nome.orEmpty(),
                 placeholder = "Selecione o membro",
                 opcoes = membros,
+                textoOpcao = { it.nome },
+                habilitado = !carregando && !salvando,
                 onSelecionar = {
-                    membroSelecionado = it
+                    erroLocal = ""
+                    pontosViewModel.selecionarMembro(it)
                 }
             )
 
@@ -147,11 +139,19 @@ fun TelaRegistrarPontosScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             CampoSelecaoPontos(
-                valor = projetoSelecionado,
-                placeholder = "Selecione o projeto",
+                valor = projetoSelecionado?.nome.orEmpty(),
+                placeholder = if (membroSelecionado == null) {
+                    "Selecione primeiro um membro"
+                } else {
+                    "Selecione o projeto"
+                },
                 opcoes = projetos,
+                textoOpcao = { it.nome },
+                habilitado = membroSelecionado != null &&
+                    !carregando && !salvando,
                 onSelecionar = {
-                    projetoSelecionado = it
+                    erroLocal = ""
+                    pontosViewModel.selecionarProjeto(it)
                 }
             )
 
@@ -170,33 +170,31 @@ fun TelaRegistrarPontosScreen(
                 value = descricao,
                 onValueChange = {
                     descricao = it
+                    erroLocal = ""
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(80.dp),
-
+                enabled = !salvando,
                 placeholder = {
                     Text(
-                        text = "Ex: Projeto xxx",
+                        text = "Ex: Desenvolvimento de funcionalidade",
                         fontSize = 11.sp
                     )
                 },
-
                 shape = RoundedCornerShape(4.dp),
-
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Gray,
                     unfocusedBorderColor = Color.LightGray,
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White
                 ),
-
                 textStyle = androidx.compose.ui.text.TextStyle(
                     fontSize = 12.sp
                 )
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = "Pontos",
@@ -212,40 +210,73 @@ fun TelaRegistrarPontosScreen(
                 onValueChange = { novoValor ->
                     if (novoValor.all { it.isDigit() }) {
                         pontos = novoValor
+                        erroLocal = ""
                     }
                 },
-
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-
+                enabled = !salvando,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number
                 ),
-
                 singleLine = true,
-
+                placeholder = {
+                    Text("Ex: 100", fontSize = 11.sp)
+                },
                 shape = RoundedCornerShape(4.dp),
-
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Gray,
                     unfocusedBorderColor = Color.LightGray,
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White
                 ),
-
                 textStyle = androidx.compose.ui.text.TextStyle(
                     fontSize = 12.sp
                 )
             )
 
-            if (erro.isNotEmpty()) {
+            if (carregando) {
+                Spacer(modifier = Modifier.height(12.dp))
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = "Carregando dados...",
+                        fontSize = 11.sp,
+                        color = Color.DarkGray
+                    )
+                }
+            }
+
+            val mensagemErro = erroLocal.ifBlank { erroViewModel }
+
+            if (mensagemErro.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = erro,
+                    text = mensagemErro,
                     color = Color.Red,
+                    fontSize = 11.sp
+                )
+            }
+
+            if (mensagem.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = mensagem,
+                    color = Color(0xFF267A39),
                     fontSize = 11.sp
                 )
             }
@@ -254,47 +285,58 @@ fun TelaRegistrarPontosScreen(
 
             Button(
                 onClick = {
+                    erroLocal = ""
 
-                    if (
-                        membroSelecionado.isBlank() ||
-                        projetoSelecionado.isBlank() ||
-                        descricao.isBlank() ||
-                        pontos.isBlank()
-                    ) {
+                    val quantidade = pontos.toIntOrNull()
 
-                        erro = "Preencha todos os campos."
+                    when {
+                        membroSelecionado == null ->
+                            erroLocal = "Selecione um membro."
 
-                    } else {
+                        projetoSelecionado == null ->
+                            erroLocal = "Selecione um projeto."
 
-                        erro = ""
+                        descricao.isBlank() ->
+                            erroLocal = "Informe a descrição."
 
-                        onSalvar(
-                            membroSelecionado,
-                            projetoSelecionado,
-                            descricao,
-                            pontos.toInt()
-                        )
+                        quantidade == null || quantidade <= 0 ->
+                            erroLocal = "Informe uma quantidade de pontos válida."
+
+                        else -> {
+                            pontosViewModel.salvarPontos(
+                                descricao = descricao,
+                                quantidade = quantidade
+                            ) {
+                                descricao = ""
+                                pontos = ""
+                            }
+                        }
                     }
                 },
-
+                enabled = !carregando && !salvando,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .width(164.dp)
                     .height(42.dp),
-
                 shape = RoundedCornerShape(12.dp),
-
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PretoFluEJ,
                     contentColor = Color.White
                 )
             ) {
-
-                Text(
-                    text = "Salvar",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (salvando) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Salvar",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -302,45 +344,43 @@ fun TelaRegistrarPontosScreen(
     }
 }
 
-
 @Composable
-fun CampoSelecaoPontos(
+fun <T> CampoSelecaoPontos(
     valor: String,
     placeholder: String,
-    opcoes: List<String>,
-    onSelecionar: (String) -> Unit
+    opcoes: List<T>,
+    textoOpcao: (T) -> String,
+    habilitado: Boolean = true,
+    onSelecionar: (T) -> Unit
 ) {
-
-    var expandido by remember {
-        mutableStateOf(false)
-    }
+    var expandido by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(42.dp)
                 .background(
-                    Color.White,
+                    if (habilitado) Color.White else Color(0xFFEAEAEA),
                     RoundedCornerShape(4.dp)
                 )
-                .clickable {
+                .clickable(enabled = habilitado) {
                     expandido = true
                 }
                 .padding(horizontal = 10.dp),
-
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Text(
                 text = if (valor.isEmpty()) placeholder else valor,
                 modifier = Modifier.weight(1f),
                 fontSize = 11.sp,
-                color = if (valor.isEmpty())
-                    Color.DarkGray else PretoFluEJ
+                color = if (valor.isEmpty()) {
+                    Color.DarkGray
+                } else {
+                    PretoFluEJ
+                }
             )
 
             Icon(
@@ -355,21 +395,31 @@ fun CampoSelecaoPontos(
             onDismissRequest = {
                 expandido = false
             },
-
-            modifier = Modifier
-                .background(Color.White)
+            modifier = Modifier.background(Color.White)
         ) {
-
-            opcoes.forEach { opcao ->
-
+            if (opcoes.isEmpty()) {
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = opcao,
+                            text = "Nenhuma opção disponível",
                             fontSize = 12.sp
                         )
                     },
+                    onClick = {
+                        expandido = false
+                    },
+                    enabled = false
+                )
+            }
 
+            opcoes.forEach { opcao ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = textoOpcao(opcao),
+                            fontSize = 12.sp
+                        )
+                    },
                     onClick = {
                         onSelecionar(opcao)
                         expandido = false
