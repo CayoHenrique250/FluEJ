@@ -1,5 +1,6 @@
 package com.example.fluej.data.api
 
+import com.example.fluej.data.model.DesempenhoMembro
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -23,4 +24,10 @@ interface FluejApi {
 
     @GET("v1/ranking")
     suspend fun ranking(@Query("ordem") ordem: String = "asc"): RankingDto
+
+    @GET("v1/membros/{membro_id}/desempenho")
+    suspend fun buscarDesempenho(
+        @Path("membro_id") membroId: String,
+        @Query("meses") meses: Int = 6
+    ): DesempenhoMembro
 }

@@ -5,8 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "desempenho_mensal")
 data class DesempenhoMensal(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0L,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val mes: String,
     val ordem: Int,
     val pontos: Int,

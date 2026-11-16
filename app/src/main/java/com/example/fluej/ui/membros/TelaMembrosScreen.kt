@@ -121,13 +121,14 @@ fun TelaMembrosScreen(
                     items = membrosFiltrados,
                     key = { it.id }
                 ) { membro ->
-                    CardMembro(
-                        membro = membro,
-                        onClick = {
-                            onMembroClick(membro)
-                            if (viewModel.podeGerenciar) membroSelecionado = membro
-                        }
-                    )
+                   CardMembro(membro = membro, onClick = {
+        if (viewModel.podeGerenciar) {
+            membroSelecionado = membro}      
+             else {
+            onMembroClick(membro)
+        }
+    }
+)
                 }
 
                 if (membrosFiltrados.isEmpty() && !viewModel.carregando) {

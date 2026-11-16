@@ -24,6 +24,9 @@ import com.example.fluej.ui.pontos.TelaPontosScreen
 import com.example.fluej.ui.membros.TelaInativarMembroScreen
 import com.example.fluej.ui.screens.DashboardPresidenteScreen
 import com.example.fluej.ui.pontos.TelaRegistrarPontosScreen
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.fluej.ui.membros.TelaDesempenhoScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -36,6 +39,9 @@ sealed class Screen(val route: String) {
     object Members : Screen("members")
     object InativarMembro : Screen("inativar_membro")
     object RegistrarPontos : Screen("registrar_pontos")
+    object Desempenho : Screen("desempenho/{membroId}") {
+    fun criarRota(membroId: String) = "desempenho/$membroId"
+}
 }
 
 private object Acesso {
@@ -92,6 +98,29 @@ fun AppNavigation() {
                 }
             )
         }
+        
+        composable(route = Screen.Desempenho.route, arguments = listOf(
+        navArgument("membroId") {
+            type = NavType.StringType
+        }
+    )
+)      
+     { entrada ->  val membroId = entrada.arguments ?.getString("membroId")
+
+         if (membroId != null) {
+            Protegida(navController, Acesso.todos) {
+             TelaDesempenhoScreen(
+                membroId = membroId,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onNavigateBottomBar = navigateBottomBar
+            )
+        }
+    }
+}
+
+
 
         composable(Screen.InativarMembro.route) {
             Protegida(navController, Acesso.cadastroMembro) {
@@ -156,13 +185,18 @@ fun AppNavigation() {
             }
         }
 
-        composable(Screen.Members.route) {
-            Protegida(navController, Acesso.todos) {
-                TelaMembrosScreen(
-                    onNavigateBottomBar = navigateBottomBar
+       composable(Screen.Members.route) {
+    Protegida(navController, Acesso.todos) {
+        TelaMembrosScreen(
+            onMembroClick = { membro ->
+                navController.navigate(
+                    Screen.Desempenho.criarRota(membro.id)
                 )
-            }
-        }
+            },
+            onNavigateBottomBar = navigateBottomBar
+        )
+    }
+}
         composable(Screen.RegisterMember.route) {
             Protegida(navController, Acesso.cadastroMembro) {
                 RegisterMemberScreen(
